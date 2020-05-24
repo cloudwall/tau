@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.5.1 (2020-05-24)
+++++++++++++++++++
+
+- Added MANIFEST.in to fix broken builds
+
 0.5.0 (2020-05-12)
 ++++++++++++++++++
 

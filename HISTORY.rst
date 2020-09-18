@@ -3,7 +3,12 @@
 Release History
 ---------------
 
-0.6.0 (TBD)
+0.6.1 (2020-09-18)
+++++++++++++++++++
+
+- Added get_start_time() and get_end_time() to HistoricNetworkScheduler
+
+0.6.0 (2020-09-18)
 ++++++++++++++++++
 
 - Split NetworkScheduler into Realtime and Historical variants

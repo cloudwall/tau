@@ -219,9 +219,17 @@ class HistoricNetworkScheduler(NetworkScheduler):
         super().__init__(network)
         self.event_queue = PriorityQueue()
         self.now = 0
+        self.start_time = 0
+        self.end_time = 0
 
     def get_time(self) -> int:
         return self.now
+
+    def get_start_time(self) -> int:
+        return self.start_time
+
+    def get_end_time(self) -> int:
+        return self.end_time
 
     def schedule_event(self, evt: Event, offset_millis: int = 0):
         event_time = self.get_time() + offset_millis
@@ -255,6 +263,8 @@ class HistoricNetworkScheduler(NetworkScheduler):
 
     def run(self, start_time_millis: int, end_time_millis: int):
         self.now = start_time_millis
+        self.start_time = start_time_millis
+        self.end_time = end_time_millis
         while True:
             if self.event_queue.empty():
                 return

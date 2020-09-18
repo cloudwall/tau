@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.6.0 (TBD)
+++++++++++++++++++
+
+- Split NetworkScheduler into Realtime and Historical variants
+
 0.5.1 (2020-05-24)
 ++++++++++++++++++
 

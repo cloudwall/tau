@@ -1,5 +1,9 @@
 import asyncio
+import time
+
 from abc import ABC, abstractmethod
+from functools import total_ordering
+from queue import PriorityQueue
 from typing import Any
 
 # noinspection PyPackageRequirements
@@ -118,22 +122,150 @@ class Network:
         self.activation_flags = self.activation_flags.fromkeys(self.activation_flags, False)
 
 
-class NetworkScheduler:
+class NetworkScheduler(ABC):
     """
-    A higher-level scheduler object sitting on top of asyncio that provides natural operations for
-    scheduling events connected in a Network.
+    Abstract base class for the event scheduler.
     """
-    def __init__(self, network: Network = Network()):
+    def __init__(self, network: Network):
         self.network = network
 
     def get_network(self):
         return self.network
 
-    def schedule_event(self, evt: Event):
-        asyncio.get_event_loop().call_soon(lambda: self.network.activate(evt))
+    @abstractmethod
+    def get_time(self) -> int:
+        pass
 
-    def schedule_update(self, signal: MutableSignal, value: Any):
+    @abstractmethod
+    def schedule_event(self, evt: Event, offset_millis: int = 0):
+        pass
+
+    @abstractmethod
+    def schedule_event_at(self, evt: Event, time_millis: int = 0):
+        pass
+
+    @abstractmethod
+    def schedule_update(self, signal: MutableSignal, value: Any, offset_millis: int = 0):
+        pass
+
+    @abstractmethod
+    def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int = 0):
+        pass
+
+
+class RealtimeNetworkScheduler(NetworkScheduler):
+    """
+    A real-time event scheduler sitting on top of asyncio that provides natural operations for
+    scheduling events connected in a Network.
+    """
+    def __init__(self, network: Network = Network()):
+        super().__init__(network)
+
+    def get_time(self) -> int:
+        return int(round(time.time() * 1000))
+
+    def schedule_event(self, evt: Event, offset_millis: int = 0):
+        self._schedule(lambda: self.network.activate(evt), offset_millis)
+
+    def schedule_event_at(self, evt: Event, time_millis: int = 0):
+        self._schedule(lambda: self.network.activate(evt), time_millis - self.get_time())
+
+    def schedule_update(self, signal: MutableSignal, value: Any, offset_millis: int = 0):
         def set_and_activate():
             signal.set_value(value)
             self.network.activate(signal)
-        asyncio.get_event_loop().call_soon(set_and_activate)
+        self._schedule(set_and_activate, offset_millis)
+
+    def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int = 0):
+        def set_and_activate():
+            signal.set_value(value)
+            self.network.activate(signal)
+        self._schedule(set_and_activate, time_millis - self.get_time())
+
+    @staticmethod
+    def _schedule(callback, offset_millis: int):
+        if offset_millis == 0:
+            asyncio.get_event_loop().call_soon(callback)
+        elif offset_millis < 0:
+            raise ValueError("Unable to schedule in the past using RealtimeNetworkScheduler")
+        else:
+            asyncio.get_event_loop().call_later(offset_millis / 1000, callback)
+
+
+@total_ordering
+class HistoricalEvent:
+    def __init__(self, time_millis: int, action: Any):
+        self.time_millis = time_millis
+        self.action = action
+
+    def get_time_millis(self) -> int:
+        return self.time_millis
+
+    def __eq__(self, other):
+        return self.get_time_millis() == other.get_time_millis()
+
+    def __ne__(self, other):
+        return self.get_time_millis() != other.get_time_millis()
+
+    def __lt__(self, other):
+        return self.get_time_millis() < other.get_time_millis()
+
+
+class HistoricNetworkScheduler(NetworkScheduler):
+    """
+    A historical mode scheduler suitable for backtesting.
+    """
+    def __init__(self, network: Network = Network()):
+        super().__init__(network)
+        self.event_queue = PriorityQueue()
+        self.now = 0
+
+    def get_time(self) -> int:
+        return self.now
+
+    def schedule_event(self, evt: Event, offset_millis: int = 0):
+        event_time = self.get_time() + offset_millis
+        hist_event = HistoricalEvent(event_time, lambda: self.network.activate(evt))
+        self.event_queue.put(hist_event)
+
+    def schedule_event_at(self, evt: Event, time_millis: int = 0):
+        event_time = time_millis
+        hist_event = HistoricalEvent(event_time, lambda: self.network.activate(evt))
+        self.event_queue.put(hist_event)
+
+    def schedule_update(self, signal: MutableSignal, value: Any, offset_millis: int = 0):
+        event_time = self.get_time() + offset_millis
+
+        def set_and_activate():
+            signal.set_value(value)
+            self.network.activate(signal)
+
+        hist_event = HistoricalEvent(event_time, set_and_activate)
+        self.event_queue.put(hist_event)
+
+    def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int = 0):
+        event_time = time_millis
+
+        def set_and_activate():
+            signal.set_value(value)
+            self.network.activate(signal)
+
+        hist_event = HistoricalEvent(event_time, set_and_activate)
+        self.event_queue.put(hist_event)
+
+    def run(self, start_time_millis: int, end_time_millis: int):
+        self.now = start_time_millis
+        while True:
+            if self.event_queue.empty():
+                return
+            event = self.event_queue.get_nowait()
+            if event.time_millis > end_time_millis:
+                # end of time
+                return
+            elif event.time_millis < start_time_millis:
+                # pre-history
+                continue
+
+            self.now = event.time_millis
+            event.action()
+

@@ -1,13 +1,13 @@
 import asyncio
 
-from tau.core import NetworkScheduler
+from tau.core import RealtimeNetworkScheduler
 from tau.event import Do
 from tau.signal import From, Map, Scan, Filter
 
 
 def test_hello_world():
     async def main():
-        scheduler = NetworkScheduler()
+        scheduler = RealtimeNetworkScheduler()
         signal = From(scheduler, ["world"])
         Do(scheduler.get_network(), signal, lambda: print(f"Hello, {signal.get_value()}!"))
 
@@ -18,7 +18,7 @@ def test_map_reduce():
     check_values = []
 
     async def main():
-        scheduler = NetworkScheduler()
+        scheduler = RealtimeNetworkScheduler()
         network = scheduler.get_network()
         values = From(scheduler, [0.0, 3.2, 2.1, 2.9, 8.3, 5.7])
         mapper = Map(network, values, lambda x: round(x))
@@ -34,7 +34,7 @@ def test_filter():
     check_values = []
 
     async def main():
-        scheduler = NetworkScheduler()
+        scheduler = RealtimeNetworkScheduler()
         network = scheduler.get_network()
         values = From(scheduler, [0.0, -3.2, 2.1, -2.9, 8.3, -5.7])
         filt = Filter(network, values, lambda x: x >= 0.0)

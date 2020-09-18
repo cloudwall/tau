@@ -1,7 +1,7 @@
 import asyncio
 import math
 
-from tau.core import NetworkScheduler
+from tau.core import RealtimeNetworkScheduler
 from tau.event import Lambda
 from tau.math import RunningSum, Max, Min, Mean, Stddev
 from tau.signal import From
@@ -11,7 +11,7 @@ def test_running_sum():
     check_values = []
 
     async def main():
-        scheduler = NetworkScheduler()
+        scheduler = RealtimeNetworkScheduler()
         network = scheduler.get_network()
         values = From(scheduler, [0.0, 3.2, 2.1, 2.9, 8.3, 5.7])
         total = RunningSum(network, values)
@@ -26,7 +26,7 @@ def test_descriptive_stats():
     check_values = []
 
     async def main():
-        scheduler = NetworkScheduler()
+        scheduler = RealtimeNetworkScheduler()
         network = scheduler.get_network()
         values = From(scheduler, [0.0, 3.2, 2.1, 2.9, 8.3, 5.7])
 

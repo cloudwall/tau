@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.7.1 (2020-09-19)
+++++++++++++++++++
+
+- Fixed BufferWithTime to work in historic mode
+
 0.7.0 (2020-09-19)
 ++++++++++++++++++
 

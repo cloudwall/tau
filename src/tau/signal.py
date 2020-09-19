@@ -56,19 +56,23 @@ class BufferWithTime(Function):
 
     .. seealso:: http://reactivex.io/documentation/operators/buffer.html
     """
-    def __init__(self, network: Network, values: Signal, interval: timedelta):
-        super().__init__(network, [values])
+    def __init__(self, scheduler: NetworkScheduler, values: Signal, interval: timedelta):
+        super().__init__(scheduler.get_network(), [values])
         self.values = values
         self.interval = interval
         self.buffer = list()
         self.timed_out = False
 
-        async def expire_timeout():
-            while True:
-                await asyncio.sleep(int(self.interval.total_seconds()))
-                self.timed_out = True
+        class FireTimer(Event):
+            def __init__(self, buffer: BufferWithTime):
+                self.buffer = buffer
 
-        asyncio.create_task(expire_timeout())
+            def on_activate(self) -> bool:
+                self.buffer.timed_out = True
+                scheduler.schedule_event(FireTimer(self.buffer), int(self.interval.total_seconds() * 1000))
+                return False
+
+        scheduler.schedule_event(FireTimer(self), int(self.interval.total_seconds() * 1000))
 
     def _call(self):
         if self.values.is_valid():

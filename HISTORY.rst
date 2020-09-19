@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.7.0 (2020-09-19)
+++++++++++++++++++
+
+- Moved setting of start/end time to HistoricNetworkScheduler constructor
+
 0.6.1 (2020-09-18)
 ++++++++++++++++++
 

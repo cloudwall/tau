@@ -215,12 +215,12 @@ class HistoricNetworkScheduler(NetworkScheduler):
     """
     A historical mode scheduler suitable for backtesting.
     """
-    def __init__(self, network: Network = Network()):
+    def __init__(self, start_time_millis: int, end_time_millis: int, network: Network = Network()):
         super().__init__(network)
         self.event_queue = PriorityQueue()
         self.now = 0
-        self.start_time = 0
-        self.end_time = 0
+        self.start_time = start_time_millis
+        self.end_time = end_time_millis
 
     def get_time(self) -> int:
         return self.now
@@ -261,18 +261,16 @@ class HistoricNetworkScheduler(NetworkScheduler):
         hist_event = HistoricalEvent(event_time, set_and_activate)
         self.event_queue.put(hist_event)
 
-    def run(self, start_time_millis: int, end_time_millis: int):
-        self.now = start_time_millis
-        self.start_time = start_time_millis
-        self.end_time = end_time_millis
+    def run(self):
+        self.now = self.start_time
         while True:
             if self.event_queue.empty():
                 return
             event = self.event_queue.get_nowait()
-            if event.time_millis > end_time_millis:
+            if event.time_millis > self.end_time:
                 # end of time
                 return
-            elif event.time_millis < start_time_millis:
+            elif event.time_millis < self.start_time:
                 # pre-history
                 continue
 

@@ -36,7 +36,7 @@ def test_event_short_circuit():
 
 
 def test_historic_scheduler1():
-    scheduler = HistoricNetworkScheduler()
+    scheduler = HistoricNetworkScheduler(0, 1000)
     run_times = []
 
     class RecordEventTime(Event):
@@ -52,12 +52,12 @@ def test_historic_scheduler1():
     scheduler.schedule_event_at(evt, 1500)
     scheduler.schedule_event_at(evt, 1000)
 
-    scheduler.run(0, 1000)
+    scheduler.run()
     assert run_times == [0, 500, 1000]
 
 
 def test_historic_scheduler2():
-    scheduler = HistoricNetworkScheduler()
+    scheduler = HistoricNetworkScheduler(0, 1000)
     run_times = []
 
     class RecordEventTime(Event):
@@ -73,12 +73,13 @@ def test_historic_scheduler2():
     scheduler.schedule_event(evt, 1500)
     scheduler.schedule_event(evt, 1000)
 
-    scheduler.run(0, 1000)
+    scheduler.run()
     assert run_times == [0, 500, 1000]
 
 
+# noinspection DuplicatedCode
 def test_historic_scheduler3():
-    scheduler = HistoricNetworkScheduler()
+    scheduler = HistoricNetworkScheduler(0, 1000)
     run_times = []
 
     class RecordEventTime(Event):
@@ -95,12 +96,13 @@ def test_historic_scheduler3():
     scheduler.schedule_update(signal, True, 1500)
     scheduler.schedule_update(signal, True, 1000)
 
-    scheduler.run(0, 1000)
+    scheduler.run()
     assert run_times == [0, 500, 1000]
 
 
+# noinspection DuplicatedCode
 def test_historic_scheduler4():
-    scheduler = HistoricNetworkScheduler()
+    scheduler = HistoricNetworkScheduler(0, 1000)
     run_times = []
 
     class RecordEventTime(Event):
@@ -117,5 +119,5 @@ def test_historic_scheduler4():
     scheduler.schedule_update_at(signal, True, 1500)
     scheduler.schedule_update_at(signal, True, 1000)
 
-    scheduler.run(0, 1000)
+    scheduler.run()
     assert run_times == [0, 500, 1000]

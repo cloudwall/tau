@@ -1,13 +1,13 @@
 import asyncio
 
-from tau.core import NetworkScheduler
+from tau.core import RealtimeNetworkScheduler
 from tau.event import Lambda
 from tau.math import RunningSum
 from tau.signal import From
 
 
 async def main():
-    scheduler = NetworkScheduler()
+    scheduler = RealtimeNetworkScheduler()
     network = scheduler.get_network()
     values = From(scheduler, [0.0, 3.2, 2.1, 2.9, 8.3, 5.7])
     total = RunningSum(network, values)

@@ -1,12 +1,12 @@
 import asyncio
 
-from tau.core import NetworkScheduler
+from tau.core import RealtimeNetworkScheduler
 from tau.event import Do
 from tau.signal import Interval, Scan
 
 
 async def main():
-    scheduler = NetworkScheduler()
+    scheduler = RealtimeNetworkScheduler()
     network = scheduler.get_network()
     values = Interval(scheduler)
     accumulator = Scan(network, values)

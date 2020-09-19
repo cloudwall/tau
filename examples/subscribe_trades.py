@@ -3,7 +3,7 @@ import json
 
 import websockets
 
-from tau.core import NetworkScheduler, MutableSignal
+from tau.core import RealtimeNetworkScheduler, MutableSignal
 from tau.event import Do
 from tau.signal import Map, Filter
 
@@ -22,7 +22,7 @@ async def subscribe_trades(message_callback):
 
 
 messages = MutableSignal()
-scheduler = NetworkScheduler()
+scheduler = RealtimeNetworkScheduler()
 network = scheduler.get_network()
 
 json_messages = Map(network, messages, lambda x: json.loads(x))

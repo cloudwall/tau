@@ -218,9 +218,9 @@ class HistoricNetworkScheduler(NetworkScheduler):
     def __init__(self, start_time_millis: int, end_time_millis: int, network: Network = Network()):
         super().__init__(network)
         self.event_queue = PriorityQueue()
-        self.now = 0
         self.start_time = start_time_millis
         self.end_time = end_time_millis
+        self.now = self.start_time
 
     def get_time(self) -> int:
         return self.now

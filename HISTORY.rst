@@ -3,6 +3,12 @@
 Release History
 ---------------
 
+0.7.2 (2020-09-19)
+++++++++++++++++++
+
+- Added unit test for BufferWithTime
+- Fixed bugs in BufferWithTime
+
 0.7.1 (2020-09-19)
 ++++++++++++++++++
 

@@ -69,18 +69,22 @@ class BufferWithTime(Function):
 
             def on_activate(self) -> bool:
                 self.buffer.timed_out = True
-                scheduler.schedule_event(FireTimer(self.buffer), int(self.interval.total_seconds() * 1000))
+                next_timer = FireTimer(self.buffer)
+                scheduler.get_network().attach(next_timer)
+                scheduler.schedule_event(next_timer, int(self.buffer.interval.total_seconds() * 1000))
                 return False
 
-        scheduler.schedule_event(FireTimer(self), int(self.interval.total_seconds() * 1000))
+        timer = FireTimer(self)
+        scheduler.get_network().attach(timer)
+        scheduler.schedule_event(timer, int(self.interval.total_seconds() * 1000))
 
     def _call(self):
         if self.values.is_valid():
-            self.buffer.append(self.values.get_value())
             if self.timed_out:
                 self._update(self.buffer.copy())
                 self.buffer.clear()
                 self.timed_out = False
+            self.buffer.append(self.values.get_value())
 
 
 class Filter(Function):

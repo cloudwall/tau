@@ -194,21 +194,30 @@ class RealtimeNetworkScheduler(NetworkScheduler):
 
 @total_ordering
 class HistoricalEvent:
-    def __init__(self, time_millis: int, action: Any):
+    def __init__(self, time_millis: int, cycle: int, action: Any):
         self.time_millis = time_millis
+        self.cycle = cycle
         self.action = action
 
     def get_time_millis(self) -> int:
         return self.time_millis
 
+    def get_cycle(self) -> int:
+        return self.cycle
+
     def __eq__(self, other):
-        return self.get_time_millis() == other.get_time_millis()
+        return (self.get_time_millis() == other.get_time_millis()) and (self.get_cycle() == other.get_cycle())
 
     def __ne__(self, other):
-        return self.get_time_millis() != other.get_time_millis()
+        return (self.get_time_millis() != other.get_time_millis()) and (self.get_cycle() != other.get_cycle())
 
     def __lt__(self, other):
-        return self.get_time_millis() < other.get_time_millis()
+        if self.get_time_millis() < other.get_time_millis():
+            return True
+        elif self.get_time_millis() > other.get_time_millis():
+            return False
+        else:
+            return self.get_cycle() < other.get_cycle()
 
 
 class HistoricNetworkScheduler(NetworkScheduler):
@@ -221,6 +230,7 @@ class HistoricNetworkScheduler(NetworkScheduler):
         self.start_time = start_time_millis
         self.end_time = end_time_millis
         self.now = self.start_time
+        self.cycle = 0
 
     def get_time(self) -> int:
         return self.now
@@ -233,12 +243,12 @@ class HistoricNetworkScheduler(NetworkScheduler):
 
     def schedule_event(self, evt: Event, offset_millis: int = 0):
         event_time = self.get_time() + offset_millis
-        hist_event = HistoricalEvent(event_time, lambda: self.network.activate(evt))
+        hist_event = self.__create_event(event_time, lambda: self.network.activate(evt))
         self.event_queue.put(hist_event)
 
     def schedule_event_at(self, evt: Event, time_millis: int = 0):
         event_time = time_millis
-        hist_event = HistoricalEvent(event_time, lambda: self.network.activate(evt))
+        hist_event = self.__create_event(event_time, lambda: self.network.activate(evt))
         self.event_queue.put(hist_event)
 
     def schedule_update(self, signal: MutableSignal, value: Any, offset_millis: int = 0):
@@ -248,7 +258,7 @@ class HistoricNetworkScheduler(NetworkScheduler):
             signal.set_value(value)
             self.network.activate(signal)
 
-        hist_event = HistoricalEvent(event_time, set_and_activate)
+        hist_event = self.__create_event(event_time, set_and_activate)
         self.event_queue.put(hist_event)
 
     def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int = 0):
@@ -258,7 +268,7 @@ class HistoricNetworkScheduler(NetworkScheduler):
             signal.set_value(value)
             self.network.activate(signal)
 
-        hist_event = HistoricalEvent(event_time, set_and_activate)
+        hist_event = self.__create_event(event_time, set_and_activate)
         self.event_queue.put(hist_event)
 
     def run(self):
@@ -277,3 +287,6 @@ class HistoricNetworkScheduler(NetworkScheduler):
             self.now = event.time_millis
             event.action()
 
+    def __create_event(self, event_time, action):
+        self.cycle = self.cycle + 1
+        return HistoricalEvent(event_time, self.cycle, action)

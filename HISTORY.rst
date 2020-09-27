@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.8.0 (2020-09-26)
+++++++++++++++++++
+
+- Ensured stable insertion-based sort for events entered with same time
+
 0.7.3 (2020-09-19)
 ++++++++++++++++++
 

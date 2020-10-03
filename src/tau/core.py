@@ -166,7 +166,7 @@ class RealtimeNetworkScheduler(NetworkScheduler):
 
         class ExecutionQueueThread(Thread):
             def __init__(self, exec_q: queue.Queue):
-                super().__init__(name="XQ-Thread")
+                super().__init__(name="XQ-Thread", daemon=True)
                 self.exec_q = exec_q
 
             def run(self):

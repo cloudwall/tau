@@ -47,5 +47,5 @@ def test_descriptive_stats():
     asyncio.run(main())
     assert check_values[0].get_value() == 8.3
     assert check_values[1].get_value() == 0.0
-    assert check_values[2].get_value() == 3.7
+    assert math.isclose(check_values[2].get_value(), 3.7, abs_tol=0.00001)
     assert math.isclose(check_values[3].get_value(), 3.24507, abs_tol=0.00001)

@@ -1,9 +1,11 @@
 import asyncio
+import queue
 import time
 
 from abc import ABC, abstractmethod
 from functools import total_ordering
 from queue import PriorityQueue
+from threading import Thread
 from typing import Any
 
 # noinspection PyPackageRequirements
@@ -160,6 +162,25 @@ class RealtimeNetworkScheduler(NetworkScheduler):
     """
     def __init__(self, network: Network = Network()):
         super().__init__(network)
+        self.q = queue.Queue()
+
+        class ExecutionQueueThread(Thread):
+            def __init__(self, exec_q: queue.Queue):
+                super().__init__(name="XQ-Thread")
+                self.exec_q = exec_q
+
+            def run(self):
+                async def run_loop():
+                    while True:
+                        runnable = self.exec_q.get()
+                        runnable()
+
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(run_loop())
+
+        consumer = ExecutionQueueThread(self.q)
+        consumer.start()
 
     def get_time(self) -> int:
         return int(round(time.time() * 1000))
@@ -182,14 +203,16 @@ class RealtimeNetworkScheduler(NetworkScheduler):
             self.network.activate(signal)
         self._schedule(set_and_activate, time_millis - self.get_time())
 
-    @staticmethod
-    def _schedule(callback, offset_millis: int):
+    def _schedule(self, callback, offset_millis: int):
+        def producer_callback():
+            self.q.put(callback)
+
         if offset_millis == 0:
-            asyncio.get_event_loop().call_soon(callback)
+            asyncio.get_event_loop().call_soon(producer_callback)
         elif offset_millis < 0:
             raise ValueError("Unable to schedule in the past using RealtimeNetworkScheduler")
         else:
-            asyncio.get_event_loop().call_later(offset_millis / 1000, callback)
+            asyncio.get_event_loop().call_later(offset_millis / 1000, producer_callback)
 
 
 @total_ordering

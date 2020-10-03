@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.9.0 (2020-10-03)
+++++++++++++++++++
+
+- Switched to producer-consumer queue model in RealtimeNetworkScheduler
+
 0.8.0 (2020-09-26)
 ++++++++++++++++++
 

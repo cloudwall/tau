@@ -170,14 +170,14 @@ class RealtimeNetworkScheduler(NetworkScheduler):
                 self.exec_q = exec_q
 
             def run(self):
-                async def run_loop():
-                    while True:
-                        runnable = self.exec_q.get()
-                        runnable()
-
+                # install an event loop on XQ-Thread
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(run_loop())
+
+                # poll for runnable events
+                while True:
+                    runnable = self.exec_q.get()
+                    runnable()
 
         consumer = ExecutionQueueThread(self.q)
         consumer.start()

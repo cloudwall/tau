@@ -1,3 +1,3 @@
 Pygments==2.7.1
-graph-theory==2020.9.23.63516
+graph-theory==2020.9.30.61958
 websockets==8.1

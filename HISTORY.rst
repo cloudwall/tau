@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.9.3 (2020-10-04)
+++++++++++++++++++
+
+- Third attempt to fix thread starvation in recursive event handlers
+
 0.9.2 (2020-10-03)
 ++++++++++++++++++
 

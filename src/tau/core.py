@@ -163,6 +163,7 @@ class RealtimeNetworkScheduler(NetworkScheduler):
     def __init__(self, network: Network = Network()):
         super().__init__(network)
         self.q = queue.Queue()
+        self.loop = asyncio.get_event_loop()
 
         class ExecutionQueueThread(Thread):
             def __init__(self, exec_q: queue.Queue):
@@ -170,17 +171,9 @@ class RealtimeNetworkScheduler(NetworkScheduler):
                 self.exec_q = exec_q
 
             def run(self):
-                # install an event loop on XQ-Thread
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-                # poll for runnable events
-                async def infinite_poll():
-                    while True:
-                        runnable = self.exec_q.get()
-                        runnable()
-
-                loop.run_until_complete(infinite_poll())
+                while True:
+                    runnable = self.exec_q.get()
+                    runnable()
 
         consumer = ExecutionQueueThread(self.q)
         consumer.start()
@@ -211,11 +204,11 @@ class RealtimeNetworkScheduler(NetworkScheduler):
             self.q.put(callback)
 
         if offset_millis == 0:
-            producer_callback()
+            self.loop.call_soon_threadsafe(producer_callback)
         elif offset_millis < 0:
             raise ValueError("Unable to schedule in the past using RealtimeNetworkScheduler")
         else:
-            asyncio.get_event_loop().call_later(offset_millis / 1000, producer_callback)
+            self.loop.call_later(offset_millis / 1000, producer_callback)
 
 
 @total_ordering

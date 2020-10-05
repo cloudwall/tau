@@ -3,6 +3,12 @@
 Release History
 ---------------
 
+0.9.4 (2020-10-05)
+++++++++++++++++++
+
+- Caught all exceptions in XQ-Thread to keep it running in live mode
+- Cleaned up some unreliable unit tests
+
 0.9.3 (2020-10-04)
 ++++++++++++++++++
 

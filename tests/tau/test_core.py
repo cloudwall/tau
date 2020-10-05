@@ -1,6 +1,9 @@
+import asyncio
 from unittest.mock import Mock
 
-from tau.core import Network, Event, HistoricNetworkScheduler, MutableSignal
+from tau.core import Network, Event, HistoricNetworkScheduler, MutableSignal, RealtimeNetworkScheduler
+from tau.event import Do
+from tau.signal import From
 
 
 def test_event_propagation():
@@ -121,3 +124,17 @@ def test_historic_scheduler4():
 
     scheduler.run()
     assert run_times == [0, 500, 1000]
+
+
+def test_raise_exception_in_exec_q():
+    def fail():
+        raise ValueError()
+
+    async def main():
+        scheduler = RealtimeNetworkScheduler()
+        network = scheduler.get_network()
+        values = From(scheduler, [0.0, 3.2, 2.1, 2.9, 8.3, 5.7])
+        Do(network, values, lambda: fail())
+
+    asyncio.run(main())
+

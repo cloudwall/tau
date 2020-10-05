@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import queue
 import time
 
@@ -160,22 +161,31 @@ class RealtimeNetworkScheduler(NetworkScheduler):
     A real-time event scheduler sitting on top of asyncio that provides natural operations for
     scheduling events connected in a Network.
     """
+
+    logger = logging.getLogger(__name__)
+
     def __init__(self, network: Network = Network()):
         super().__init__(network)
         self.q = queue.Queue()
         self.loop = asyncio.get_event_loop()
 
         class ExecutionQueueThread(Thread):
-            def __init__(self, exec_q: queue.Queue):
+            def __init__(self, scheduler: RealtimeNetworkScheduler, exec_q: queue.Queue):
                 super().__init__(name="XQ-Thread", daemon=True)
+                self.scheduler = scheduler
                 self.exec_q = exec_q
 
             def run(self):
                 while True:
                     runnable = self.exec_q.get()
-                    runnable()
 
-        consumer = ExecutionQueueThread(self.q)
+                    # noinspection PyBroadException
+                    try:
+                        runnable()
+                    except BaseException as error:
+                        self.scheduler.logger.error('Uncaught exception in ExecutionQueueThread', exc_info=error)
+
+        consumer = ExecutionQueueThread(self, self.q)
         consumer.start()
 
     def get_time(self) -> int:

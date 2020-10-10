@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.11.0 (2020-10-10)
++++++++++++++++++++
+
+- Add SignalGenerator API for historical mode
+
 0.10.0 (2020-10-10)
 +++++++++++++++++++
 

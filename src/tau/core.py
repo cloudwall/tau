@@ -235,6 +235,15 @@ class RealtimeNetworkScheduler(NetworkScheduler):
             self.loop.call_later(offset_millis / 1000, producer_callback)
 
 
+class SignalGenerator(ABC):
+    """
+    A class that runs *before* historical time starts which takes care of loading historical signal data
+    into the scheduler.
+    """
+    def generate(self, scheduler: NetworkScheduler):
+        pass
+
+
 @total_ordering
 class HistoricalEvent:
     def __init__(self, time_millis: int, cycle: int, action: Any):
@@ -267,6 +276,9 @@ class HistoricNetworkScheduler(NetworkScheduler):
     """
     A historical mode scheduler suitable for backtesting.
     """
+
+    logger = logging.getLogger(__name__)
+
     def __init__(self, start_time_millis: int, end_time_millis: int, network: Network = Network()):
         super().__init__(network)
         self.event_queue = PriorityQueue()
@@ -274,6 +286,7 @@ class HistoricNetworkScheduler(NetworkScheduler):
         self.end_time = end_time_millis
         self.now = self.start_time
         self.cycle = 0
+        self.generators = []
 
     def get_time(self) -> int:
         return self.now
@@ -283,6 +296,9 @@ class HistoricNetworkScheduler(NetworkScheduler):
 
     def get_end_time(self) -> int:
         return self.end_time
+
+    def add_generator(self, generator: SignalGenerator):
+        self.generators.append(generator)
 
     def schedule(self, action, offset_millis: int = 0):
         event_time = self.get_time() + offset_millis
@@ -325,7 +341,12 @@ class HistoricNetworkScheduler(NetworkScheduler):
         self.event_queue.put(hist_event)
 
     def run(self):
+        self.logger.debug('Running generators in pre-historic time')
+        for generator in self.generators:
+            generator.generate(self)
+
         self.now = self.start_time
+        self.logger.debug(f'Starting historic run: now={self.now}')
         while True:
             if self.event_queue.empty():
                 return
@@ -339,6 +360,7 @@ class HistoricNetworkScheduler(NetworkScheduler):
 
             self.now = event.time_millis
             event.action()
+        self.logger.debug(f'Completed historic run: now={self.now}')
 
     def __create_event(self, event_time, action):
         self.cycle = self.cycle + 1

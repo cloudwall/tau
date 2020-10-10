@@ -17,7 +17,7 @@ requires = [
 
 setuptools.setup(
     name='pytau',
-    version='0.10.0',
+    version='0.11.0',
     description='A Python functional reactive framework.',
     long_description=readme + '\n\n' + history,
     long_description_content_type='text/x-rst',

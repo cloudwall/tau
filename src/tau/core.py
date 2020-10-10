@@ -140,6 +140,14 @@ class NetworkScheduler(ABC):
         pass
 
     @abstractmethod
+    def schedule(self, action, offset_millis: int = 0):
+        pass
+
+    @abstractmethod
+    def schedule_at(self, action, time_millis: int = 0):
+        pass
+
+    @abstractmethod
     def schedule_event(self, evt: Event, offset_millis: int = 0):
         pass
 
@@ -190,6 +198,12 @@ class RealtimeNetworkScheduler(NetworkScheduler):
 
     def get_time(self) -> int:
         return int(round(time.time() * 1000))
+
+    def schedule(self, action, offset_millis: int = 0):
+        self._schedule(action, offset_millis)
+
+    def schedule_at(self, action, time_millis: int = 0):
+        self._schedule(action, time_millis - self.get_time())
 
     def schedule_event(self, evt: Event, offset_millis: int = 0):
         self._schedule(lambda: self.network.activate(evt), offset_millis)
@@ -269,6 +283,16 @@ class HistoricNetworkScheduler(NetworkScheduler):
 
     def get_end_time(self) -> int:
         return self.end_time
+
+    def schedule(self, action, offset_millis: int = 0):
+        event_time = self.get_time() + offset_millis
+        hist_event = self.__create_event(event_time, action)
+        self.event_queue.put(hist_event)
+
+    def schedule_at(self, action, time_millis: int = 0):
+        event_time = time_millis
+        hist_event = self.__create_event(event_time, action)
+        self.event_queue.put(hist_event)
 
     def schedule_event(self, evt: Event, offset_millis: int = 0):
         event_time = self.get_time() + offset_millis

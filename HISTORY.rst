@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.12.0 (2020-10-24)
++++++++++++++++++++
+
+- Allow scheduling of a lambda as a value update
+
 0.11.0 (2020-10-10)
 +++++++++++++++++++
 

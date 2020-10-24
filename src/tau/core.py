@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from functools import total_ordering
 from queue import PriorityQueue
 from threading import Thread
-from typing import Any
+from typing import Any, Callable
 
 # noinspection PyPackageRequirements
 from graph import Graph
@@ -324,7 +324,10 @@ class HistoricNetworkScheduler(NetworkScheduler):
         event_time = self.get_time() + offset_millis
 
         def set_and_activate():
-            signal.set_value(value)
+            if isinstance(value, Callable):
+                signal.set_value(value())
+            else:
+                signal.set_value(value)
             self.network.activate(signal)
 
         hist_event = self.__create_event(event_time, set_and_activate)
@@ -334,7 +337,10 @@ class HistoricNetworkScheduler(NetworkScheduler):
         event_time = time_millis
 
         def set_and_activate():
-            signal.set_value(value)
+            if isinstance(value, Callable):
+                signal.set_value(value())
+            else:
+                signal.set_value(value)
             self.network.activate(signal)
 
         hist_event = self.__create_event(event_time, set_and_activate)

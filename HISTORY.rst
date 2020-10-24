@@ -3,6 +3,11 @@
 Release History
 ---------------
 
+0.12.1 (2020-10-24)
++++++++++++++++++++
+
+- Bug fix: allow scheduling of a lambda as a value update in realtime as well as historical
+
 0.12.0 (2020-10-24)
 +++++++++++++++++++
 

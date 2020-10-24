@@ -213,13 +213,19 @@ class RealtimeNetworkScheduler(NetworkScheduler):
 
     def schedule_update(self, signal: MutableSignal, value: Any, offset_millis: int = 0):
         def set_and_activate():
-            signal.set_value(value)
+            if isinstance(value, Callable):
+                signal.set_value(value())
+            else:
+                signal.set_value(value)
             self.network.activate(signal)
         self._schedule(set_and_activate, offset_millis)
 
     def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int = 0):
         def set_and_activate():
-            signal.set_value(value)
+            if isinstance(value, Callable):
+                signal.set_value(value())
+            else:
+                signal.set_value(value)
             self.network.activate(signal)
         self._schedule(set_and_activate, time_millis - self.get_time())
 

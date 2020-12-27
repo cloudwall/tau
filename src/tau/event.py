@@ -57,10 +57,10 @@ class Alarm(Event):
         self.scheduler.get_network().attach(self)
         today = datetime.datetime.fromtimestamp(self.scheduler.get_time() / 1000.0, tz=self.tz)
         if today.time() < self.wake_up_time:
-            wake_up = datetime.datetime.combine(today.date(), self.wake_up_time)
+            wake_up = datetime.datetime.combine(today.date(), self.wake_up_time, tzinfo=self.tz)
         else:
             tomorrow = datetime.datetime(today.year, today.month, today.day, tzinfo=self.tz) + timedelta(days=1)
-            wake_up = datetime.datetime.combine(tomorrow.date(), self.wake_up_time)
+            wake_up = datetime.datetime.combine(tomorrow.date(), self.wake_up_time, tzinfo=self.tz)
         self.scheduler.schedule_event_at(self, int(wake_up.timestamp() * 1000))
 
 

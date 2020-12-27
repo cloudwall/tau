@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime, time
 
 import pytz
-import tzlocal
 
 from tau.core import HistoricNetworkScheduler
 from tau.event import Do, Alarm, RepeatingTimer
@@ -25,8 +24,8 @@ def test_alarm():
     # run for one day
     scheduler = HistoricNetworkScheduler(0, 60 * 60 * 24 * 1000)
 
-    # schedule at 4pm local
-    tz = tzlocal.get_localzone()
+    # schedule at 4pm US/Eastern
+    tz = pytz.timezone('US/Eastern')
     alarm = Alarm(scheduler, time(16, 00, 00), tz)
     timestamps = list()
     Do(scheduler.get_network(), alarm, lambda: timestamps.append(datetime.

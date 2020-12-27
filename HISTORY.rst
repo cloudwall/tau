@@ -3,6 +3,13 @@
 Release History
 ---------------
 
+0.13.0 (2020-12-28)
+++++++++++++++++++++
+
+- Add Pipe, Alarm and RepeatingTimer signal types
+- Remove websocket dependency & example
+- fixed defaulting of time_millis parameter in schedule_xxx_at() methods
+
 0.12.1 (2020-10-24)
 +++++++++++++++++++
 

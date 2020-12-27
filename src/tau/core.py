@@ -144,7 +144,7 @@ class NetworkScheduler(ABC):
         pass
 
     @abstractmethod
-    def schedule_at(self, action, time_millis: int = 0):
+    def schedule_at(self, action, time_millis: int):
         pass
 
     @abstractmethod
@@ -152,7 +152,7 @@ class NetworkScheduler(ABC):
         pass
 
     @abstractmethod
-    def schedule_event_at(self, evt: Event, time_millis: int = 0):
+    def schedule_event_at(self, evt: Event, time_millis: int):
         pass
 
     @abstractmethod
@@ -160,7 +160,7 @@ class NetworkScheduler(ABC):
         pass
 
     @abstractmethod
-    def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int = 0):
+    def schedule_update_at(self, signal: MutableSignal, value: Any, time_millis: int):
         pass
 
 

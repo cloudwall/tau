@@ -230,6 +230,10 @@ class RealtimeNetworkScheduler(NetworkScheduler):
             self.network.activate(signal)
         self._schedule(set_and_activate, time_millis - self.get_time())
 
+    def shutdown(self):
+        self.loop.stop()
+        self.consumer.running = False
+
     def _schedule(self, callback, offset_millis: int):
         def producer_callback():
             self.q.put(callback)

@@ -13,6 +13,7 @@ def test_hello_world():
         scheduler = RealtimeNetworkScheduler()
         signal = From(scheduler, ['world'])
         Do(scheduler.get_network(), signal, lambda: print(f'Hello, {signal.get_value()}!'))
+        scheduler.shutdown()
 
     asyncio.run(main())
 

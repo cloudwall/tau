@@ -24,7 +24,7 @@ def test_repeating_timer():
 def test_alarm():
     # run for one day
     scheduler = HistoricNetworkScheduler(0, 60 * 60 * 24 * 1000)
-    print(tzlocal.get_localzone())
+    assert tzlocal.get_localzone() == 'US/Eastern'
 
     # schedule at 4pm US/Eastern
     tz = pytz.timezone('US/Eastern')

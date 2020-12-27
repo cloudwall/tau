@@ -1,21 +1,17 @@
-import asyncio
-from datetime import timedelta, datetime, time, tzinfo
+from datetime import timedelta, datetime, time
 
 import pytz
 
-from tau.core import RealtimeNetworkScheduler, HistoricNetworkScheduler, MutableSignal
+from tau.core import HistoricNetworkScheduler, MutableSignal
 from tau.event import Do
 from tau.signal import From, Map, Scan, Filter, BufferWithTime, Alarm, RepeatingTimer
 
 
 def test_hello_world():
-    async def main():
-        scheduler = RealtimeNetworkScheduler()
-        signal = From(scheduler, ['world'])
-        Do(scheduler.get_network(), signal, lambda: print(f'Hello, {signal.get_value()}!'))
-        scheduler.shutdown()
-
-    asyncio.run(main())
+    scheduler = HistoricNetworkScheduler(0, 30 * 1000)
+    signal = From(scheduler, ['world'])
+    Do(scheduler.get_network(), signal, lambda: print(f'Hello, {signal.get_value()}!'))
+    scheduler.run()
 
 
 def test_map_reduce():

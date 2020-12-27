@@ -182,9 +182,10 @@ class RealtimeNetworkScheduler(NetworkScheduler):
                 super().__init__(name="XQ-Thread", daemon=True)
                 self.scheduler = scheduler
                 self.exec_q = exec_q
+                self.running = True
 
             def run(self):
-                while True:
+                while self.running:
                     runnable = self.exec_q.get()
 
                     # noinspection PyBroadException
@@ -193,8 +194,8 @@ class RealtimeNetworkScheduler(NetworkScheduler):
                     except BaseException as error:
                         self.scheduler.logger.error('Uncaught exception in ExecutionQueueThread', exc_info=error)
 
-        consumer = ExecutionQueueThread(self, self.q)
-        consumer.start()
+        self.consumer = ExecutionQueueThread(self, self.q)
+        self.consumer.start()
 
     def get_time(self) -> int:
         return int(round(time.time() * 1000))

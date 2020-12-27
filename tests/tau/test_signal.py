@@ -13,6 +13,7 @@ def test_hello_world():
         scheduler = RealtimeNetworkScheduler()
         signal = From(scheduler, ['world'])
         Do(scheduler.get_network(), signal, lambda: print(f'Hello, {signal.get_value()}!'))
+        scheduler.loop.stop()
 
     asyncio.run(main())
 
@@ -28,6 +29,7 @@ def test_map_reduce():
         accumulator = Scan(network, mapper)
         check_values.append(accumulator)
         Do(network, accumulator, lambda: print(f'{accumulator.get_value()}'))
+        scheduler.loop.stop()
 
     asyncio.run(main())
     assert check_values[0].get_value() == 22.0
@@ -43,6 +45,7 @@ def test_filter():
         filt = Filter(network, values, lambda x: x >= 0.0)
         check_values.append(filt)
         Do(network, filt, lambda: print(f'{filt.get_value()}'))
+        scheduler.loop.stop()
 
     asyncio.run(main())
     assert check_values[0].get_value() == 8.3

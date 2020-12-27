@@ -1,6 +1,5 @@
 from datetime import timedelta, datetime, time
 
-import pytest
 import pytz
 
 from tau.core import HistoricNetworkScheduler
@@ -21,7 +20,6 @@ def test_repeating_timer():
     assert str(timestamps[3]) == '1969-12-31 19:01:00-05:00'
 
 
-@pytest.mark.skip(reason="hangs on CI build")
 def test_alarm():
     # run for one day
     scheduler = HistoricNetworkScheduler(0, 60 * 60 * 24 * 1000)

@@ -59,7 +59,7 @@ class Alarm(Event):
         if today.time() < self.wake_up_time:
             wake_up = datetime.datetime.combine(today.date(), self.wake_up_time)
         else:
-            tomorrow = datetime.datetime(today.year, today.month, today.day) + timedelta(days=1)
+            tomorrow = datetime.datetime(today.year, today.month, today.day, tzinfo=self.tz) + timedelta(days=1)
             wake_up = datetime.datetime.combine(tomorrow.date(), self.wake_up_time)
         self.scheduler.schedule_event_at(self, int(wake_up.timestamp() * 1000))
 

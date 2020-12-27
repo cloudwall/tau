@@ -7,7 +7,6 @@ from tau.core import HistoricNetworkScheduler
 from tau.event import Do, Alarm, RepeatingTimer
 
 
-@pytest.mark.skip(reason="hangs on CI build")
 def test_repeating_timer():
     # run for one minute
     scheduler = HistoricNetworkScheduler(0, 60 * 1000)
@@ -22,6 +21,7 @@ def test_repeating_timer():
     assert str(timestamps[3]) == '1969-12-31 19:01:00-05:00'
 
 
+@pytest.mark.skip(reason="hangs on CI build")
 def test_alarm():
     # run for one day
     scheduler = HistoricNetworkScheduler(0, 60 * 60 * 24 * 1000)

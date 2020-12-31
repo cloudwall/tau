@@ -3,7 +3,7 @@ from abc import abstractmethod
 from datetime import timedelta
 from typing import Callable, Any, List
 
-from tau.core import Signal, Network, MutableSignal, NetworkScheduler, Event
+from tau.core import Signal, Network, MutableSignal, NetworkScheduler, Event, Clock
 
 
 class Function(Signal):
@@ -71,12 +71,12 @@ class BufferWithTime(Function):
                 self.buffer.timed_out = True
                 next_timer = FireTimer(self.buffer)
                 scheduler.get_network().attach(next_timer)
-                scheduler.schedule_event(next_timer, int(self.buffer.interval.total_seconds() * 1000))
+                scheduler.schedule_event(next_timer, Clock.to_millis_offset(self.buffer.interval))
                 return False
 
         timer = FireTimer(self)
         scheduler.get_network().attach(timer)
-        scheduler.schedule_event(timer, int(self.interval.total_seconds() * 1000))
+        scheduler.schedule_event(timer, Clock.to_millis_offset(self.interval))
 
     def _call(self):
         if self.values.is_valid():

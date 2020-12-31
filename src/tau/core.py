@@ -1,15 +1,18 @@
 import asyncio
 import logging
 import queue
+import sys
 import time
 
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta, tzinfo
 from functools import total_ordering
 from queue import PriorityQueue
 from threading import Thread
 from typing import Any, Callable
 
 # noinspection PyPackageRequirements
+import tzlocal
 from graph import Graph
 
 
@@ -125,18 +128,65 @@ class Network:
         self.activation_flags = self.activation_flags.fromkeys(self.activation_flags, False)
 
 
+class Clock:
+    """
+    API that provides Python-friendly datetime representations for the native milliseconds used in NetworkScheduler.
+    Note that if timezone is not specified for TZ-specific operations the local TZ reported by tzlocal API is used.
+    """
+    def __init__(self, scheduler):
+        self.scheduler = scheduler
+        self.local_zone = tzlocal.get_localzone()
+
+    def get_tz(self) -> tzinfo:
+        return self.local_zone
+
+    def get_time(self, tz: tzinfo = None) -> datetime:
+        return Clock._convert_millis_to_datetime(self.scheduler.get_time(), tz)
+
+    def get_start_time(self, tz: tzinfo = None) -> datetime:
+        return Clock._convert_millis_to_datetime(self.scheduler.get_start_time(), tz)
+
+    def get_end_time(self, tz: tzinfo = None) -> datetime:
+        return Clock._convert_millis_to_datetime(self.scheduler.get_end_time(), tz)
+
+    @staticmethod
+    def to_millis_offset(interval: timedelta) -> int:
+        return int(interval.total_seconds() * 1000.0)
+
+    @staticmethod
+    def to_millis_time(at_time: datetime) -> int:
+        return int(at_time.timestamp() * 1000.0)
+
+    def _convert_millis_to_datetime(self, millis: int, tz: tzinfo):
+        if tz is None:
+            tz = self.local_zone
+        return datetime.fromtimestamp(millis / 1000, tz)
+
+
 class NetworkScheduler(ABC):
     """
     Abstract base class for the event scheduler.
     """
     def __init__(self, network: Network):
         self.network = network
+        self.clock = Clock(self)
 
-    def get_network(self):
+    def get_network(self) -> Network:
         return self.network
+
+    def get_clock(self) -> Clock:
+        return self.clock
 
     @abstractmethod
     def get_time(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_start_time(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_end_time(self) -> int:
         pass
 
     @abstractmethod
@@ -196,9 +246,16 @@ class RealtimeNetworkScheduler(NetworkScheduler):
 
         self.consumer = ExecutionQueueThread(self, self.q)
         self.consumer.start()
+        self.start_time = self.get_time()
 
     def get_time(self) -> int:
         return int(round(time.time() * 1000))
+
+    def get_start_time(self) -> int:
+        return self.start_time
+
+    def get_end_time(self) -> int:
+        return sys.maxsize
 
     def schedule(self, action, offset_millis: int = 0):
         self._schedule(action, offset_millis)
@@ -290,6 +347,16 @@ class HistoricNetworkScheduler(NetworkScheduler):
 
     logger = logging.getLogger(__name__)
 
+    @classmethod
+    def new_instance(cls, start_time: str, end_time: str):
+        """
+        Creates a HistoricNetworkScheduler based on %Y-%m-%dT%H:%M:%S format time strings for start & end time.
+        """
+        timestamp_fmt = '%Y-%m-%dT%H:%M:%S'
+        start_time_millis = int(time.mktime(datetime.strptime(start_time, timestamp_fmt).timetuple()) * 1000)
+        end_time_millis = int(time.mktime(datetime.strptime(end_time, timestamp_fmt).timetuple()) * 1000)
+        return HistoricNetworkScheduler(start_time_millis, end_time_millis)
+
     def __init__(self, start_time_millis: int, end_time_millis: int, network: Network = Network()):
         super().__init__(network)
         self.event_queue = PriorityQueue()
@@ -380,5 +447,5 @@ class HistoricNetworkScheduler(NetworkScheduler):
         self.logger.debug(f'Completed historic run: now={self.now}')
 
     def __create_event(self, event_time, action):
-        self.cycle = self.cycle + 1
+        self.cycle += 1
         return HistoricalEvent(event_time, self.cycle, action)

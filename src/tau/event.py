@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from typing import Callable, Any
 
-from tau.core import Event, Network, NetworkScheduler
+from tau.core import Event, Network, NetworkScheduler, Clock
 
 
 class NullEvent(Event):
@@ -64,13 +64,13 @@ class Alarm(Event):
 
     def _schedule(self):
         self.scheduler.get_network().attach(self)
-        today = datetime.datetime.fromtimestamp(self.scheduler.get_time() / 1000.0, tz=self.tz)
+        today = self.scheduler.get_clock().get_time(tz=self.tz)
         if self.first_time_schedule and today.time() < self.wake_up_time:
             wake_up_dt = datetime.datetime.combine(today.date(), self.wake_up_time, tzinfo=self.tz)
         else:
             tomorrow = datetime.datetime(today.year, today.month, today.day, tzinfo=self.tz) + timedelta(days=1)
             wake_up_dt = datetime.datetime.combine(tomorrow.date(), self.wake_up_time, tzinfo=self.tz)
-        self.scheduler.schedule_event_at(self, int(wake_up_dt.timestamp() * 1000))
+        self.scheduler.schedule_event_at(self, Clock.to_millis_time(wake_up_dt))
         self.first_time_schedule = False
 
 
@@ -86,4 +86,4 @@ class RepeatingTimer(Event):
 
     def _schedule(self):
         self.scheduler.get_network().attach(self)
-        self.scheduler.schedule_event(self, int(self.interval.total_seconds() * 1000))
+        self.scheduler.schedule_event(self, Clock.to_millis_offset(self.interval))

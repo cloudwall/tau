@@ -3,6 +3,13 @@
 Release History
 ---------------
 
+0.14.0 (2020-12-31)
++++++++++++++++++++
+
+- Lift get_start_time() / get_end_time() to NetworkScheduler
+- Add get_clock() helper method to NetworkScheduler
+- Add NullEvent
+
 0.13.0 (2020-12-28)
 ++++++++++++++++++++
 

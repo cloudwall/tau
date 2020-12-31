@@ -6,6 +6,14 @@ from typing import Callable, Any
 from tau.core import Event, Network, NetworkScheduler
 
 
+class NullEvent(Event):
+    """
+    A simple event that just propagates but does nothing when activated.
+    """
+    def on_activate(self) -> bool:
+        return True
+
+
 class Lambda(Event):
     """
     A helper implementation of Event that binds any Python function to zero or more Event parameters.

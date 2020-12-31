@@ -11,8 +11,9 @@ from queue import PriorityQueue
 from threading import Thread
 from typing import Any, Callable
 
-# noinspection PyPackageRequirements
 import tzlocal
+
+# noinspection PyPackageRequirements
 from graph import Graph
 
 

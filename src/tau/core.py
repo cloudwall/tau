@@ -141,13 +141,13 @@ class Clock:
         return self.local_zone
 
     def get_time(self, tz: tzinfo = None) -> datetime:
-        return Clock._convert_millis_to_datetime(self.scheduler.get_time(), tz)
+        return self._convert_millis_to_datetime(self.scheduler.get_time(), tz)
 
     def get_start_time(self, tz: tzinfo = None) -> datetime:
-        return Clock._convert_millis_to_datetime(self.scheduler.get_start_time(), tz)
+        return self._convert_millis_to_datetime(self.scheduler.get_start_time(), tz)
 
     def get_end_time(self, tz: tzinfo = None) -> datetime:
-        return Clock._convert_millis_to_datetime(self.scheduler.get_end_time(), tz)
+        return self._convert_millis_to_datetime(self.scheduler.get_end_time(), tz)
 
     @staticmethod
     def to_millis_offset(interval: timedelta) -> int:

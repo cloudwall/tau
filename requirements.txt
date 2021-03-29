@@ -1,4 +1,4 @@
-Pygments==2.7.3
+Pygments==2.7.4
 graph-theory==2020.12.17.52432
 pytz==2020.5
 tzlocal==2.1
